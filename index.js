@@ -3,15 +3,22 @@ import bodyParser from 'body-parser'
 import morgan from 'morgan'
 import mongoose from 'mongoose'
 import cors from 'cors'
-import routes from './routes'
+
+import bills from './routes/bills'
+import users from './routes/users'
+
+import passport from 'passport'
 
 const app = express()
+
+require('./users/auth')(passport)
 
 require('dotenv-safe').config()
 
 app.use(morgan('dev'))
 app.use(bodyParser.urlencoded({ extended: false }))
 app.use(bodyParser.json())
+app.use(passport.initialize())
 app.use(cors())
 
 let db = mongoose.connect(process.env.MG_CONN, {
@@ -20,7 +27,8 @@ let db = mongoose.connect(process.env.MG_CONN, {
 })
 mongoose.Promise = global.Promise
 
-routes(app)
+bills(app, passport)
+users(app, passport)
 
 app.listen(3000, () => {
     console.log('Express Server has been started')
